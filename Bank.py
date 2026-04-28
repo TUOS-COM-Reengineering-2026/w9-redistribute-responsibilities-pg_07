@@ -3,58 +3,140 @@ from Branch import Branch
 from Customer import Customer
 from Staff import Staff
 
-
 class Bank:
+    def __init__(self, payroll):
+        self.account_service = AccountService()
+        self.customer_service = CustomerService()
+        self.branch_service = BranchService()
+        self.staff_service = StaffService()
+        self.payroll_service = PayrollService(payroll)
+
+    def create_account(self, account, customer):
+        self.customer_service.add_customer(customer)
+        self.account_service.setup_new_account(account, customer)
+
+
+class AccountService:
     def __init__(self):
         self.accounts = []
-        self.customers = []
-        self.customer_addresses = {}  # key: customer, value: address
-        self.customer_phone_numbers = {}  # key: customer, value: phone number
-        self.branches = []
-        self.branch_opening_times = {}  # key: branch, value: opening time
 
-    def setup_branch(self, branch: Branch):
-        self.branches.append(branch)
-        self.branch_opening_times[branch] = "9:00"  # default opening time
-
-    def close_branch(self, branch: Branch, transfer_branch: Branch):
-        for staff in branch.get_staff():
-            self.transfer_staff_member(branch, transfer_branch, staff)
-        self.branches.remove(branch)
-
-    def transfer_staff_member(self, from_branch: Branch, to_branch: Branch, staff: Staff):
-        from_branch.get_staff().remove(staff)
-        to_branch.get_staff().append(staff)
-
-    def setup_new_account(self, account: Account, customer: Customer):
+    def setup_new_account(self, account, customer):
         account.set_customer(customer)
         self.accounts.append(account)
 
-        if customer not in self.customers:
-            self.customers.append(customer)
-            self.customer_addresses[customer] = "NO ADDRESS"  # default address
-            self.customer_phone_numbers[customer] = "NO PHONE NUMBER"  # default phone number
+    def add_funds(self, account, amount):
+        account.set_balance(account.get_balance() + amount)
 
-    def obtain_balance(self, account: Account):
-        return account.get_balance()
+    def add_interest(self, account):
+        interest = account.get_balance() * account.get_interest_rate()
+        account.set_balance(account.get_balance() + interest)
 
-    def add_interest(self, account: Account):
-        balance = account.get_balance()
-        interest_rate = account.get_interest_rate()
-        interest = balance * interest_rate
-        account.set_balance(balance + interest)
-
-    def add_funds(self, account: Account, amount: float):
-        balance = account.get_balance()
-        account.set_balance(balance + amount)
-
-    def close_account(self, account: Account):
+    def close_account(self, account):
         account.set_customer(None)
         account.set_balance(0)
         self.accounts.remove(account)
 
-    def add_staff_member(self, branch: Branch, staff: Staff):
+
+class CustomerService:
+    def __init__(self):
+        self.customers = []
+        self.addresses = {}
+        self.phone_numbers = {}
+
+    def add_customer(self, customer):
+        if customer not in self.customers:
+            self.customers.append(customer)
+            self.addresses[customer] = "NO ADDRESS"
+            self.phone_numbers[customer] = "NO PHONE NUMBER"
+
+
+class BranchService:
+    def __init__(self):
+        self.branches = []
+        self.opening_times = {}
+
+    def setup_branch(self, branch):
+        self.branches.append(branch)
+        self.opening_times[branch] = "9:00"
+
+    def close_branch(self, branch, transfer_branch):
+        for staff in branch.get_staff():
+            transfer_branch.get_staff().append(staff)
+        self.branches.remove(branch)
+
+    def change_opening_time(self, branch, time):
+        self.opening_times[branch] = time
+
+
+class StaffService:
+    def add_staff_member(self, branch, staff):
         branch.get_staff().append(staff)
 
-    def change_opening_time(self, branch: Branch, time: str):
-        self.branch_opening_times[branch] = time
+    def transfer_staff(self, from_branch, to_branch, staff):
+        from_branch.get_staff().remove(staff)
+        to_branch.get_staff().append(staff)
+
+
+class PayrollService:
+    def __init__(self, payroll):
+        self.payroll = payroll
+
+    def change_payroll_date(self, date, staff_category):
+        self.payroll.get_staff_category_pay_schedule(staff_category).set_pay_date(date)
+
+
+
+# class Bank:
+#     def __init__(self):
+#         self.accounts = []
+#         self.customers = []
+#         self.customer_addresses = {}  # key: customer, value: address
+#         self.customer_phone_numbers = {}  # key: customer, value: phone number
+#         self.branches = []
+#         self.branch_opening_times = {}  # key: branch, value: opening time
+
+#     def setup_branch(self, branch: Branch):
+#         self.branches.append(branch)
+#         self.branch_opening_times[branch] = "9:00"  # default opening time
+
+#     def close_branch(self, branch: Branch, transfer_branch: Branch):
+#         for staff in branch.get_staff():
+#             self.transfer_staff_member(branch, transfer_branch, staff)
+#         self.branches.remove(branch)
+
+#     def transfer_staff_member(self, from_branch: Branch, to_branch: Branch, staff: Staff):
+#         from_branch.get_staff().remove(staff)
+#         to_branch.get_staff().append(staff)
+
+#     def setup_new_account(self, account: Account, customer: Customer):
+#         account.set_customer(customer)
+#         self.accounts.append(account)
+
+#         if customer not in self.customers:
+#             self.customers.append(customer)
+#             self.customer_addresses[customer] = "NO ADDRESS"  # default address
+#             self.customer_phone_numbers[customer] = "NO PHONE NUMBER"  # default phone number
+
+#     def obtain_balance(self, account: Account):
+#         return account.get_balance()
+
+#     def add_interest(self, account: Account):
+#         balance = account.get_balance()
+#         interest_rate = account.get_interest_rate()
+#         interest = balance * interest_rate
+#         account.set_balance(balance + interest)
+
+#     def add_funds(self, account: Account, amount: float):
+#         balance = account.get_balance()
+#         account.set_balance(balance + amount)
+
+#     def close_account(self, account: Account):
+#         account.set_customer(None)
+#         account.set_balance(0)
+#         self.accounts.remove(account)
+
+#     def add_staff_member(self, branch: Branch, staff: Staff):
+#         branch.get_staff().append(staff)
+
+#     def change_opening_time(self, branch: Branch, time: str):
+#         self.branch_opening_times[branch] = time
