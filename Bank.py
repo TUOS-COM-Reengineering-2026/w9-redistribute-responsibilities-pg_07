@@ -1,7 +1,6 @@
 from Account import Account
 from Branch import Branch
 from Customer import Customer
-from Payroll import Payroll
 from Staff import Staff
 
 
@@ -13,7 +12,6 @@ class Bank:
         self.customer_phone_numbers = {}  # key: customer, value: phone number
         self.branches = []
         self.branch_opening_times = {}  # key: branch, value: opening time
-        self.payroll = None
 
     def setup_branch(self, branch: Branch):
         self.branches.append(branch)
@@ -60,7 +58,3 @@ class Bank:
 
     def change_opening_time(self, branch: Branch, time: str):
         self.branch_opening_times[branch] = time
-
-    def change_payroll_date(self, payroll: Payroll, date: str, staff_category: str):
-        self.payroll = payroll
-        self.payroll.get_staff_category_pay_schedule(staff_category).set_pay_date(date)
